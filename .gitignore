@@ -6,3 +6,7 @@ dist
 *.log
 coverage
 uploads
+playwright-report
+test-results
+.env.local
+*.tsbuildinfo

@@ -1,0 +1,24 @@
+name: onebank
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: onebank
+      POSTGRES_PASSWORD: onebank
+      POSTGRES_DB: onebank
+    ports: ["5440:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U onebank"]
+      interval: 5s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+    ports: ["6390:6379"]
+  # Optional SMTP catcher (or run `pnpm mail` for the Node-based MailDev on the same ports).
+  mailpit:
+    image: axllent/mailpit:latest
+    profiles: ["mail"]
+    ports: ["1026:1025", "8026:8025"]
+volumes:
+  pgdata:

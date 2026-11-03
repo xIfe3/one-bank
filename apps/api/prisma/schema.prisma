@@ -1,0 +1,819 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// Identity & access
+// ============================================================
+
+enum UserStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED
+  BLOCKED
+  CLOSED
+}
+
+enum AdminRole {
+  SUPERADMIN
+  ADMIN
+  SUPPORT
+  COMPLIANCE
+}
+
+enum AdminStatus {
+  INVITED
+  ACTIVE
+  DISABLED
+}
+
+model User {
+  id                 String     @id @default(cuid())
+  email              String     @unique
+  phone              String
+  firstName          String
+  lastName           String
+  dateOfBirth        DateTime?
+  country            String     @default("US")
+  addressLine1       String     @default("")
+  city               String     @default("")
+  state              String     @default("")
+  postalCode         String     @default("")
+  passwordHash       String
+  emailVerifiedAt    DateTime?
+  status             UserStatus @default(PENDING_VERIFICATION)
+  statusReason       String?
+  kycLevel           Int        @default(0)
+  baseCurrency       String     @default("USD")
+  tag                String?    @unique
+  avatarUrl          String?
+  transactionPinHash String?
+  pinFailedAttempts  Int        @default(0)
+  pinLockedUntil     DateTime?
+  twoFactorSecret    String?
+  twoFactorEnabled   Boolean    @default(false)
+  backupCodes        String[]   @default([])
+  failedLoginCount   Int        @default(0)
+  lockedUntil        DateTime?
+  referralCode       String     @unique
+  referredById       String?
+  referredBy         User?      @relation("Referrals", fields: [referredById], references: [id])
+  referrals          User[]     @relation("Referrals")
+  limitOverrideDailyUsd Decimal? @db.Decimal(19, 4)
+  lastLoginAt        DateTime?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  sessions          Session[]
+  loginEvents       LoginEvent[]
+  tokens            VerificationToken[]
+  accounts          LedgerAccount[]
+  kycSubmissions    KycSubmission[]
+  beneficiaries     Beneficiary[]
+  transfers         Transfer[]
+  scheduledTransfers ScheduledTransfer[]
+  billPayments      BillPayment[]
+  cards             VirtualCard[]
+  savingsGoals      SavingsGoal[]
+  fixedDeposits     FixedDeposit[]
+  loans             Loan[]
+  tickets           SupportTicket[]
+  notifications     Notification[]
+  notificationPrefs NotificationPreference[]
+  adminNotes        AdminNote[]
+  fraudFlags        FraudFlag[]
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AdminUser {
+  id               String      @id @default(cuid())
+  email            String      @unique
+  firstName        String
+  lastName         String
+  passwordHash     String?
+  role             AdminRole   @default(SUPPORT)
+  status           AdminStatus @default(INVITED)
+  twoFactorSecret  String?
+  twoFactorEnabled Boolean     @default(false)
+  failedLoginCount Int         @default(0)
+  lockedUntil      DateTime?
+  lastLoginAt      DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  sessions        Session[]
+  tokens          VerificationToken[]
+  assignedTickets SupportTicket[]
+  notes           AdminNote[]
+}
+
+model Session {
+  id               String    @id @default(cuid())
+  userId           String?
+  user             User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  adminId          String?
+  admin            AdminUser? @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  refreshTokenHash String    @unique
+  familyId         String
+  userAgent        String    @default("")
+  deviceType       String    @default("desktop")
+  browser          String    @default("Unknown")
+  os               String    @default("Unknown")
+  ip               String    @default("")
+  location         String    @default("Unknown")
+  createdAt        DateTime  @default(now())
+  lastSeenAt       DateTime  @default(now())
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  revokedReason    String?
+
+  @@index([userId])
+  @@index([adminId])
+  @@index([familyId])
+}
+
+enum TokenType {
+  EMAIL_VERIFY
+  PASSWORD_RESET
+  EMAIL_CHANGE
+  PIN_RESET
+  ADMIN_INVITE
+  LOGIN_2FA
+  REVOKE_ALL
+}
+
+model VerificationToken {
+  id        String    @id @default(cuid())
+  type      TokenType
+  tokenHash String    @unique
+  userId    String?
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  adminId   String?
+  admin     AdminUser? @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  payload   Json?
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, type])
+}
+
+model LoginEvent {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  adminId   String?
+  email     String
+  success   Boolean
+  reason    String?
+  ip        String   @default("")
+  userAgent String   @default("")
+  browser   String   @default("")
+  os        String   @default("")
+  location  String   @default("")
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+}
+
+enum KycStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model KycSubmission {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level        Int
+  idType       String
+  idNumber     String
+  documentPath String
+  selfiePath   String?
+  status       KycStatus @default(PENDING)
+  reviewedById String?
+  reviewNote   String?
+  reviewedAt   DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([status])
+}
+
+// ============================================================
+// Ledger (double-entry)
+// ============================================================
+
+enum AccountType {
+  CUSTOMER_WALLET
+  SAVINGS
+  FIXED_DEPOSIT
+  LOAN
+  CARD
+  SYSTEM
+}
+
+enum AccountStatus {
+  ACTIVE
+  FROZEN
+  CLOSED
+}
+
+model LedgerAccount {
+  id               String        @id @default(cuid())
+  type             AccountType
+  currency         String
+  accountNumber    String?       @unique
+  name             String
+  systemCode       String?
+  ownerId          String?
+  owner            User?         @relation(fields: [ownerId], references: [id])
+  balance          Decimal       @default(0) @db.Decimal(19, 4)
+  availableBalance Decimal       @default(0) @db.Decimal(19, 4)
+  status           AccountStatus @default(ACTIVE)
+  statusReason     String?
+  isPrimary        Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  postings Posting[]
+
+  @@unique([systemCode, currency])
+  @@index([ownerId])
+}
+
+enum EntryType {
+  DEPOSIT
+  INTERNAL_TRANSFER
+  INTERBANK
+  WIRE
+  BILL
+  CARD_FUNDING
+  CARD_WITHDRAWAL
+  CARD_SPEND
+  FX
+  FEE
+  ADMIN_CREDIT
+  ADMIN_DEBIT
+  REVERSAL
+  INTEREST
+  SAVINGS_TRANSFER
+  LOAN_DISBURSE
+  LOAN_REPAY
+  REFERRAL_BONUS
+}
+
+enum EntryStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REVERSED
+}
+
+model JournalEntry {
+  id              String       @id @default(cuid())
+  reference       String       @unique
+  idempotencyKey  String?      @unique
+  type            EntryType
+  status          EntryStatus  @default(COMPLETED)
+  description     String
+  category        String?
+  metadata        Json?
+  counterpartyName String?
+  counterpartyAccount String?
+  counterpartyBank String?
+  initiatorType   String       @default("USER") // USER | ADMIN | SYSTEM
+  initiatorId     String?
+  valueDate       DateTime     @default(now())
+  reversalOfId    String?      @unique
+  reversalOf      JournalEntry? @relation("Reversal", fields: [reversalOfId], references: [id])
+  reversedBy      JournalEntry? @relation("Reversal")
+  failureReason   String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  postings  Posting[]
+  holds     Hold[]
+  transfer  Transfer?
+  billPayment BillPayment?
+  cardTransaction CardTransaction?
+  fraudFlags FraudFlag[]
+
+  @@index([type])
+  @@index([status])
+  @@index([valueDate])
+}
+
+model Posting {
+  id        String        @id @default(cuid())
+  entryId   String
+  entry     JournalEntry  @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  accountId String
+  account   LedgerAccount @relation(fields: [accountId], references: [id])
+  amount    Decimal       @db.Decimal(19, 4)
+  currency  String
+  balanceAfter Decimal?   @db.Decimal(19, 4)
+  createdAt DateTime      @default(now())
+
+  @@index([accountId, createdAt])
+  @@index([entryId])
+}
+
+/// A hold reserves funds (reduces availableBalance) for a PENDING entry.
+model Hold {
+  id         String       @id @default(cuid())
+  entryId    String
+  entry      JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  accountId  String
+  amount     Decimal      @db.Decimal(19, 4)
+  releasedAt DateTime?
+  createdAt  DateTime     @default(now())
+
+  @@index([entryId])
+}
+
+// ============================================================
+// Payments
+// ============================================================
+
+enum TransferKind {
+  INTERNAL
+  INTERBANK
+  WIRE
+}
+
+enum TransferStatus {
+  PENDING
+  PROCESSING
+  AWAITING_REVIEW
+  COMPLETED
+  FAILED
+  REJECTED
+  REVERSED
+}
+
+model Transfer {
+  id                 String         @id @default(cuid())
+  userId             String
+  user               User           @relation(fields: [userId], references: [id])
+  entryId            String         @unique
+  entry              JournalEntry   @relation(fields: [entryId], references: [id])
+  kind               TransferKind
+  fromAccountId      String
+  toAccountId        String?
+  amount             Decimal        @db.Decimal(19, 4)
+  fee                Decimal        @default(0) @db.Decimal(19, 4)
+  currency           String
+  recipientName      String
+  recipientAccount   String
+  recipientBankCode  String?
+  recipientBankName  String?
+  swiftCode          String?
+  iban               String?
+  recipientAddress   String?
+  recipientCountry   String?
+  purpose            String?
+  narration          String?
+  status             TransferStatus @default(PENDING)
+  timeline           Json           @default("[]")
+  reviewReason       String?
+  reviewedById       String?
+  completedAt        DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  @@index([status])
+  @@index([userId])
+}
+
+model Beneficiary {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          TransferKind
+  nickname      String?
+  name          String
+  accountNumber String
+  bankCode      String?
+  bankName      String?
+  swiftCode     String?
+  country       String?
+  address       String?
+  lastUsedAt    DateTime?
+  createdAt     DateTime @default(now())
+
+  @@unique([userId, type, accountNumber])
+}
+
+model ScheduledTransfer {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind       TransferKind
+  payload    Json
+  amount     Decimal  @db.Decimal(19, 4)
+  currency   String
+  recipientName String
+  frequency  String   @default("ONCE")
+  nextRunAt  DateTime
+  lastRunAt  DateTime?
+  lastError  String?
+  runCount   Int      @default(0)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  @@index([active, nextRunAt])
+}
+
+model Bank {
+  id      String  @id @default(cuid())
+  code    String  @unique
+  name    String
+  country String  @default("US")
+  active  Boolean @default(true)
+}
+
+model BillProvider {
+  id         String   @id @default(cuid())
+  category   String
+  name       String
+  code       String   @unique
+  currencies String[]
+  fixedAmounts Decimal[] @db.Decimal(19, 4)
+  logoColor  String   @default("#C9A227")
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  payments BillPayment[]
+}
+
+model BillPayment {
+  id           String       @id @default(cuid())
+  userId       String
+  user         User         @relation(fields: [userId], references: [id])
+  entryId      String       @unique
+  entry        JournalEntry @relation(fields: [entryId], references: [id])
+  providerId   String
+  provider     BillProvider @relation(fields: [providerId], references: [id])
+  customerId   String
+  customerName String
+  amount       Decimal      @db.Decimal(19, 4)
+  currency     String
+  token        String?
+  createdAt    DateTime     @default(now())
+}
+
+model FxRate {
+  id        String   @id @default(cuid())
+  base      String
+  quote     String
+  rate      Decimal  @db.Decimal(19, 8)
+  spread    Decimal  @default(0.75) @db.Decimal(6, 3)
+  updatedAt DateTime @updatedAt
+
+  @@unique([base, quote])
+}
+
+// ============================================================
+// Cards
+// ============================================================
+
+enum CardStatus {
+  ACTIVE
+  FROZEN
+  TERMINATED
+}
+
+model VirtualCard {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  accountId    String     @unique
+  brand        String
+  label        String
+  nameOnCard   String
+  last4        String
+  panEnc       String
+  cvvEnc       String
+  expMonth     Int
+  expYear      Int
+  currency     String
+  status       CardStatus @default(ACTIVE)
+  statusReason String?
+  spendLimit   Decimal    @default(0) @db.Decimal(19, 4)
+  color        String     @default("navy")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  transactions CardTransaction[]
+}
+
+model CardTransaction {
+  id        String       @id @default(cuid())
+  cardId    String
+  card      VirtualCard  @relation(fields: [cardId], references: [id])
+  entryId   String?      @unique
+  entry     JournalEntry? @relation(fields: [entryId], references: [id])
+  merchant  String
+  category  String
+  amount    Decimal      @db.Decimal(19, 4)
+  currency  String
+  status    String       @default("APPROVED") // APPROVED | DECLINED
+  declineReason String?
+  createdAt DateTime     @default(now())
+}
+
+// ============================================================
+// Savings & loans
+// ============================================================
+
+model SavingsGoal {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+  accountId         String    @unique
+  name              String
+  targetAmount      Decimal   @db.Decimal(19, 4)
+  targetDate        DateTime?
+  autoSaveAmount    Decimal   @default(0) @db.Decimal(19, 4)
+  autoSaveFrequency String    @default("NONE")
+  autoSaveSourceId  String?
+  nextAutoSaveAt    DateTime?
+  status            String    @default("ACTIVE") // ACTIVE | COMPLETED | CLOSED
+  createdAt         DateTime  @default(now())
+}
+
+model FixedDeposit {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  accountId   String   @unique
+  sourceAccountId String
+  principal   Decimal  @db.Decimal(19, 4)
+  rate        Decimal  @db.Decimal(6, 3)
+  tenorDays   Int
+  currency    String
+  startsAt    DateTime @default(now())
+  maturesAt   DateTime
+  status      String   @default("ACTIVE") // ACTIVE | MATURED | BROKEN
+  interestPaid Decimal @default(0) @db.Decimal(19, 4)
+  closedAt    DateTime?
+  createdAt   DateTime @default(now())
+}
+
+model LoanProduct {
+  id            String  @id @default(cuid())
+  name          String
+  description   String
+  currency      String
+  minAmount     Decimal @db.Decimal(19, 4)
+  maxAmount     Decimal @db.Decimal(19, 4)
+  interestRate  Decimal @db.Decimal(6, 3) // annual %
+  minTenorMonths Int
+  maxTenorMonths Int
+  lateFeePercent Decimal @default(2) @db.Decimal(6, 3)
+  minKycLevel   Int     @default(2)
+  active        Boolean @default(true)
+
+  loans Loan[]
+}
+
+enum LoanStatus {
+  APPLIED
+  APPROVED
+  REJECTED
+  DISBURSED
+  REPAID
+  DEFAULTED
+}
+
+model Loan {
+  id               String      @id @default(cuid())
+  userId           String
+  user             User        @relation(fields: [userId], references: [id])
+  productId        String
+  product          LoanProduct @relation(fields: [productId], references: [id])
+  accountId        String?     @unique
+  disburseAccountId String
+  principal        Decimal     @db.Decimal(19, 4)
+  interestRate     Decimal     @db.Decimal(6, 3)
+  tenorMonths      Int
+  totalRepayable   Decimal     @db.Decimal(19, 4)
+  amountRepaid     Decimal     @default(0) @db.Decimal(19, 4)
+  currency         String
+  purpose          String
+  status           LoanStatus  @default(APPLIED)
+  decisionNote     String?
+  decidedById      String?
+  disbursedAt      DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  repayments LoanRepayment[]
+}
+
+model LoanRepayment {
+  id        String    @id @default(cuid())
+  loanId    String
+  loan      Loan      @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  dueDate   DateTime
+  amountDue Decimal   @db.Decimal(19, 4)
+  amountPaid Decimal  @default(0) @db.Decimal(19, 4)
+  lateFee   Decimal   @default(0) @db.Decimal(19, 4)
+  status    String    @default("DUE") // DUE | PAID | LATE | MISSED
+  paidAt    DateTime?
+
+  @@index([status, dueDate])
+}
+
+// ============================================================
+// Support, notifications, platform
+// ============================================================
+
+model SupportTicket {
+  id               String    @id @default(cuid())
+  number           Int       @unique @default(autoincrement())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id])
+  subject          String
+  category         String
+  priority         String    @default("MEDIUM")
+  status           String    @default("OPEN")
+  journalEntryId   String?
+  assignedAdminId  String?
+  assignedAdmin    AdminUser? @relation(fields: [assignedAdminId], references: [id])
+  firstResponseAt  DateTime?
+  resolvedAt       DateTime?
+  lastActivityAt   DateTime  @default(now())
+  createdAt        DateTime  @default(now())
+
+  messages TicketMessage[]
+
+  @@index([status])
+}
+
+model TicketMessage {
+  id          String        @id @default(cuid())
+  ticketId    String
+  ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorType  String        // USER | ADMIN | SYSTEM
+  authorId    String?
+  authorName  String
+  body        String
+  internal    Boolean       @default(false)
+  attachments Json          @default("[]")
+  createdAt   DateTime      @default(now())
+}
+
+model CannedReply {
+  id    String @id @default(cuid())
+  title String
+  body  String
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category  String
+  type      String
+  title     String
+  body      String
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+}
+
+model NotificationPreference {
+  id       String  @id @default(cuid())
+  userId   String
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category String
+  inApp    Boolean @default(true)
+  email    Boolean @default(true)
+
+  @@unique([userId, category])
+}
+
+model Announcement {
+  id        String    @id @default(cuid())
+  title     String
+  body      String
+  variant   String    @default("INFO")
+  active    Boolean   @default(true)
+  startsAt  DateTime  @default(now())
+  endsAt    DateTime?
+  createdById String?
+  createdAt DateTime  @default(now())
+}
+
+model SystemSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorType  String   // ADMIN | USER | SYSTEM
+  actorId    String?
+  actorEmail String?
+  action     String
+  targetType String?
+  targetId   String?
+  reason     String?
+  before     Json?
+  after      Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId])
+  @@index([targetType, targetId])
+  @@index([createdAt])
+}
+
+model AdminNote {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  adminId   String
+  admin     AdminUser @relation(fields: [adminId], references: [id])
+  body      String
+  createdAt DateTime  @default(now())
+}
+
+model FraudFlag {
+  id         String        @id @default(cuid())
+  userId     String
+  user       User          @relation(fields: [userId], references: [id])
+  entryId    String?
+  entry      JournalEntry? @relation(fields: [entryId], references: [id])
+  rule       String
+  severity   String        @default("MEDIUM")
+  details    String
+  status     String        @default("OPEN") // OPEN | DISMISSED | CONFIRMED
+  resolvedById String?
+  resolvedAt DateTime?
+  createdAt  DateTime      @default(now())
+
+  @@index([status])
+}
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  to        String
+  subject   String
+  template  String
+  html      String
+  status    String   @default("QUEUED") // QUEUED | SENT | FAILED
+  error     String?
+  attempts  Int      @default(0)
+  sentAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model Faq {
+  id       String  @id @default(cuid())
+  category String
+  question String
+  answer   String
+  order    Int     @default(0)
+  published Boolean @default(true)
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model Referral {
+  id         String   @id @default(cuid())
+  referrerId String
+  refereeId  String   @unique
+  bonusPaid  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}

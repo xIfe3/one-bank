@@ -1,0 +1,40 @@
+{
+  "name": "one-bank",
+  "private": true,
+  "packageManager": "pnpm@10.32.1",
+  "scripts": {
+    "dev": "pnpm --filter @onebank/shared build && turbo run dev --parallel",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "db:up": "docker compose up -d",
+    "db:migrate": "pnpm --filter @onebank/api prisma:migrate",
+    "db:seed": "pnpm --filter @onebank/api seed",
+    "db:reset": "pnpm --filter @onebank/api db:reset",
+    "mail": "maildev --smtp 1026 --web 8026",
+    "test:e2e": "playwright test",
+    "seed:reset-admin-2fa": "pnpm --filter @onebank/api exec ts-node --transpile-only prisma/reset-admin-2fa.ts"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0",
+    "typescript": "^5.8.3",
+    "prettier": "^3.5.3",
+    "maildev": "^2.2.1",
+    "@playwright/test": "^1.56.0",
+    "otplib": "^12.0.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "argon2",
+      "@nestjs/core",
+      "esbuild",
+      "sharp",
+      "msgpackr-extract",
+      "unrs-resolver"
+    ]
+  }
+}

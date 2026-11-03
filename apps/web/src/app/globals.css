@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: 'Libre Franklin', 'Helvetica Neue', Arial, sans-serif;
+    --font-serif: 'Libre Caslon Text', Georgia, 'Times New Roman', serif;
+    --font-display: 'Libre Caslon Display', 'Libre Caslon Text', Georgia, serif;
+  }
+  html {
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-ivory font-sans text-navy-900;
+    font-feature-settings: 'tnum' 0, 'lnum' 1;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  ::selection {
+    @apply bg-gold-200 text-navy-900;
+  }
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8;
+  }
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.22em] text-gold-600;
+  }
+  .h-display {
+    @apply font-display text-4xl font-normal leading-[1.06] tracking-[-0.015em] sm:text-5xl lg:text-[64px];
+  }
+  .h-section {
+    @apply font-display text-3xl font-normal leading-[1.1] tracking-[-0.01em] sm:text-[42px];
+  }
+  .prose-legal h2 {
+    @apply mb-3 mt-10 font-serif text-2xl text-navy-800;
+  }
+  .prose-legal h3 {
+    @apply mb-2 mt-6 font-semibold text-navy-800;
+  }
+  .prose-legal p,
+  .prose-legal li {
+    @apply mb-3 leading-7 text-navy-600;
+  }
+  .prose-legal ul {
+    @apply list-disc pl-6;
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
