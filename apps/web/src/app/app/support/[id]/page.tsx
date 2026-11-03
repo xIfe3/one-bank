@@ -55,7 +55,7 @@ export default function TicketPage() {
       <Link href="/app/support" className="mb-4 inline-flex items-center gap-1 text-sm text-navy-500 hover:text-navy-800">
         <ArrowLeft className="h-4 w-4" /> All tickets
       </Link>
-      <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
         <Card>
           <div className="mb-6 flex items-start justify-between gap-4 border-b border-navy-50 pb-4">
             <div>

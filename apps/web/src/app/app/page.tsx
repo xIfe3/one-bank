@@ -1,6 +1,6 @@
 'use client';
 
-import { CURRENCY_META, formatMoney } from '@onebank/shared';
+import { formatMoney } from '@onebank/shared';
 import { Button, Card, CardHeader, CurrencyFlag, EmptyState, Money, Skeleton, cn } from '@onebank/ui';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeftRight, ArrowRight, Copy, CreditCard, Eye, EyeOff, Plus, Receipt, RefreshCw, Wallet } from 'lucide-react';
@@ -35,7 +35,7 @@ export default function Dashboard() {
 
   if (isLoading || !data)
     return (
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Skeleton className="h-52 lg:col-span-2" />
         <Skeleton className="h-52" />
         <Skeleton className="h-80 lg:col-span-2" />
@@ -48,7 +48,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="relative overflow-hidden border-0 bg-navy-deep text-white lg:col-span-2">
           <div className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-gold-500/20 blur-3xl" />
           <div className="relative">
@@ -68,17 +68,17 @@ export default function Dashboard() {
                 { label: 'Exchange', icon: RefreshCw, href: '/app/accounts?exchange=1' },
               ].map((a) => {
                 const inner = (
-                  <span className="flex flex-col items-center gap-2 rounded-2xl bg-white/10 px-2 py-3 text-xs font-medium transition hover:bg-white/15">
+                  <span className="flex h-full flex-col items-center justify-center gap-2 rounded-2xl bg-white/10 px-1.5 py-3 text-center text-xs font-medium leading-tight transition hover:bg-white/15">
                     <a.icon className="h-5 w-5 text-gold-300" />
                     {a.label}
                   </span>
                 );
                 return a.href ? (
-                  <Link key={a.label} href={a.href}>
+                  <Link key={a.label} href={a.href} className="block h-full">
                     {inner}
                   </Link>
                 ) : (
-                  <button key={a.label} onClick={a.onClick}>
+                  <button key={a.label} onClick={a.onClick} className="block h-full w-full">
                     {inner}
                   </button>
                 );
@@ -131,7 +131,7 @@ export default function Dashboard() {
             Manage <ArrowRight className="inline h-3.5 w-3.5" />
           </Link>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {wallets.map((a) => (
             <Card key={a.id} className="group">
               <div className="flex items-center justify-between">
@@ -163,7 +163,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr]">
         <Card>
           <CardHeader
             title="Recent activity"

@@ -28,7 +28,7 @@ export default function Analytics() {
         subtitle={`Your money at a glance, in ${data.currency}`}
         actions={<Tabs value={months} onChange={setMonths} tabs={[{ value: '3', label: '3M' }, { value: '6', label: '6M' }, { value: '12', label: '12M' }]} />}
       />
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Stat label="Money in" value={formatMoney(data.totals.inflow, data.currency)} icon={<ArrowDownLeft className="h-5 w-5" />} />
         <Stat label="Money out" value={formatMoney(data.totals.outflow, data.currency)} icon={<ArrowUpRight className="h-5 w-5" />} />
         <Stat tone="navy" label="Net" value={formatMoney(net, data.currency, { sign: true })} sub={net >= 0 ? 'You saved more than you spent' : 'You spent more than you earned'} icon={<Scale className="h-5 w-5" />} />
@@ -37,11 +37,11 @@ export default function Analytics() {
         <CardHeader title="Cash flow by month" subtitle="Gold = in, navy = out" />
         <FlowChart data={data.monthly} currency={data.currency} height={300} />
       </Card>
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader title="Spending by category" />
           {data.categories.length ? (
-            <div className="grid items-center gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 items-center gap-4 sm:grid-cols-2">
               <DonutChart data={data.categories} currency={data.currency} />
               <ul className="space-y-2.5">
                 {data.categories.slice(0, 7).map((c, i) => (

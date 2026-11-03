@@ -88,7 +88,7 @@ export function AdjustModal({ accounts, defaultAccountId, onClose }: { accounts:
           ))}
         </Select>
       </Field>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label={`Amount (${acct?.currency ?? ''})`}>
           <Input inputMode="decimal" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value.replace(/[^\d.]/g, '') })} />
         </Field>
@@ -175,7 +175,7 @@ export function CustomTxModal({ accounts, defaultAccountId, onClose }: { account
         }
       }}
     >
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Field label="Account" className="sm:col-span-2">
           <Select value={f.accountId} onChange={set('accountId')}>
             {accounts.map((a) => (

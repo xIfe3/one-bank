@@ -80,7 +80,7 @@ export default function TransactionDetail() {
       <Link href="/app/transactions" className="mb-4 inline-flex items-center gap-1 text-sm text-navy-500 hover:text-navy-800">
         <ArrowLeft className="h-4 w-4" /> Transactions
       </Link>
-      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
         <Card>
           <div className="flex flex-col items-center border-b border-navy-50 pb-6 text-center">
             <TxIcon type={t.type} credit={credit} />

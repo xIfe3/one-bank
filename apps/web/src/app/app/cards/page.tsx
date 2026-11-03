@@ -86,7 +86,7 @@ export default function Cards() {
           <EmptyState icon={<CreditCard className="h-6 w-6" />} title="No cards yet" body="Create a virtual card in seconds — perfect for online shopping and subscriptions." action={<Button variant="gold" onClick={() => setCreate(true)}>Create your first card</Button>} />
         </Card>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1.1fr]">
           <div className="space-y-5">
             <div className="relative">
               <CardVisual

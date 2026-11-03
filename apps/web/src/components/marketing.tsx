@@ -158,7 +158,7 @@ export function SiteFooter() {
   ];
   return (
     <footer className="bg-navy-900 text-navy-200">
-      <div className="container-x grid gap-12 py-16 lg:grid-cols-[1.3fr_2fr]">
+      <div className="container-x grid grid-cols-1 gap-12 py-16 lg:grid-cols-[1.3fr_2fr]">
         <div>
           <Logo light />
           <p className="mt-4 max-w-sm text-sm leading-6 text-navy-300">Private-grade banking for everyone. Hold, move and grow your money in dollars, euros and pounds — securely.</p>
@@ -362,7 +362,7 @@ export function CtaBand({ title = 'Banking that feels like a private client serv
 export function PageHero({ eyebrow, title, body, children }: { eyebrow: string; title: React.ReactNode; body: string; children?: React.ReactNode }) {
   return (
     <section className="border-b border-navy-100/60 bg-white pt-32">
-      <div className="container-x grid items-center gap-12 pb-16 lg:grid-cols-2">
+      <div className="container-x grid grid-cols-1 items-center gap-12 pb-16 lg:grid-cols-2">
         <div className="animate-fade-up">
           <p className="eyebrow">{eyebrow}</p>
           <h1 className="h-display mt-4 text-navy-800">{title}</h1>
@@ -388,7 +388,7 @@ export function PageHero({ eyebrow, title, body, children }: { eyebrow: string; 
 
 export function FeatureGrid({ items }: { items: { icon: React.ReactNode; title: string; body: string }[] }) {
   return (
-    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((f) => (
         <div key={f.title} className="group rounded-3xl border border-navy-100 bg-white p-7 transition hover:-translate-y-1 hover:shadow-card">
           <div className="grid h-12 w-12 place-items-center rounded-2xl bg-navy-800 text-gold-300 transition group-hover:bg-gold-sheen group-hover:text-navy-900">{f.icon}</div>

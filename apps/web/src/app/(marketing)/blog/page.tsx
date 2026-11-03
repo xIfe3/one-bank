@@ -10,7 +10,7 @@ export default function Blog() {
     <section className="container-x pb-24 pt-36">
       <p className="eyebrow">The One Bank blog</p>
       <h1 className="h-display mt-4 text-navy-800">Money, made clearer.</h1>
-      <Link href={`/blog/${feature.slug}`} className="mt-12 grid overflow-hidden rounded-[32px] bg-navy-deep text-white transition hover:shadow-lift lg:grid-cols-2">
+      <Link href={`/blog/${feature.slug}`} className="mt-12 grid grid-cols-1 overflow-hidden rounded-[32px] bg-navy-deep text-white transition hover:shadow-lift lg:grid-cols-2">
         <div className="p-10">
           <p className="text-xs font-semibold uppercase tracking-widest text-gold-400">{feature.category}</p>
           <h2 className="mt-3 font-display text-3xl">{feature.title}</h2>
@@ -21,7 +21,7 @@ export default function Blog() {
         </div>
         <div className="hidden bg-[radial-gradient(circle_at_30%_30%,#E3C55A_0%,#C9A227_30%,transparent_60%)] opacity-60 lg:block" />
       </Link>
-      <div className="mt-8 grid gap-6 md:grid-cols-2">
+      <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
         {rest.map((p) => (
           <Link key={p.slug} href={`/blog/${p.slug}`} className="rounded-3xl border border-navy-100 bg-white p-8 transition hover:-translate-y-1 hover:shadow-card">
             <p className="text-xs font-semibold uppercase tracking-widest text-gold-600">{p.category}</p>

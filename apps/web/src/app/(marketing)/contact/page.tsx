@@ -53,7 +53,7 @@ function ContactForm() {
 
   return (
     <form onSubmit={submit} className="space-y-4 rounded-3xl border border-navy-100 bg-white p-8 shadow-card" noValidate>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Full name" error={errors.name}>
           <Input value={form.name} onChange={set('name')} autoComplete="name" />
         </Field>
@@ -78,7 +78,7 @@ function ContactForm() {
 export default function Contact() {
   return (
     <section className="container-x pb-24 pt-36">
-      <div className="grid gap-12 lg:grid-cols-[1fr_1.3fr]">
+      <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1.3fr]">
         <div>
           <p className="eyebrow">Contact</p>
           <h1 className="h-display mt-4 text-navy-800">We’re here to help.</h1>

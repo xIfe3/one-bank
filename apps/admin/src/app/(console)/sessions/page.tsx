@@ -36,7 +36,7 @@ export default function Sessions() {
   return (
     <>
       <PageHeader title="Active sessions" subtitle="Every signed-in device across the platform." />
-      <div className="mb-5 grid gap-4 sm:grid-cols-2">
+      <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Stat label="Active sessions (this view)" value={data?.total ?? '—'} icon={<MonitorSmartphone className="h-5 w-5" />} />
         <Stat tone="navy" label="Online in last 5 minutes" value={data?.onlineNow ?? '—'} icon={<Wifi className="h-5 w-5" />} />
       </div>

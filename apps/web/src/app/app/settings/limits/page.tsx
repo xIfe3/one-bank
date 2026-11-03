@@ -24,7 +24,7 @@ export default function LimitsPage() {
   const pct = data.dailyUsd ? Math.min(100, (data.usedTodayUsd / data.dailyUsd) * 100) : 0;
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Stat tone="navy" label="Your level" value={`Level ${data.kycLevel}`} sub={data.label} icon={<Gauge className="h-5 w-5" />} />
         <Stat label="Daily limit" value={usd(data.dailyUsd)} sub={`${usd(data.singleUsd)} per transaction`} />
         <Stat label="Remaining today" value={usd(data.remainingUsd)} sub={`${usd(data.usedTodayUsd)} used`} />

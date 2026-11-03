@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import type { TokenType, User } from '@prisma/client';
 import { type SignupInput } from '@onebank/shared';
 import argon2 from 'argon2';
@@ -23,6 +23,8 @@ const LOCK_MINUTES = 15;
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger('Auth');
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
@@ -117,14 +119,17 @@ export class AuthService {
         data: { type: 'CUSTOMER_WALLET', currency: user.baseCurrency, ownerId: user.id, accountNumber, name: `${user.baseCurrency} Account`, isPrimary: true },
       }),
     ]);
-    await this.notifications.notify(user.id, {
-      category: 'ACCOUNT',
-      type: 'WELCOME',
-      title: 'Welcome to One Bank 🎉',
-      body: `Your ${user.baseCurrency} account ${accountNumber} is ready. Set your transaction PIN to start sending money.`,
-      link: '/app/settings/security',
-      email: { template: 'welcome', data: { currency: user.baseCurrency, accountNumber } },
-    });
+    // Fire-and-forget: the welcome message must not slow down (or fail) verification.
+    void this.notifications
+      .notify(user.id, {
+        category: 'ACCOUNT',
+        type: 'WELCOME',
+        title: 'Welcome to One Bank 🎉',
+        body: `Your ${user.baseCurrency} account ${accountNumber} is ready. Set your transaction PIN to start sending money.`,
+        link: '/app/settings/security',
+        email: { template: 'welcome', data: { currency: user.baseCurrency, accountNumber } },
+      })
+      .catch((e) => this.logger.warn(`Welcome notification failed for ${user.id}: ${e instanceof Error ? e.message : e}`));
     return { alreadyVerified: false };
   }
 
@@ -195,6 +200,15 @@ export class AuthService {
       if (attempts >= 5) await this.redis.client.del(`2fa:${challengeToken}`);
       else await this.redis.setJson(`2fa:${challengeToken}`, { ...ch, attempts }, 300);
       await this.prisma.loginEvent.create({ data: { userId: user.id, email: user.email, success: false, reason: 'bad_2fa', ...this.eventDevice(device) } });
+      // Wrong second factors count toward the same lockout as wrong passwords.
+      const count = user.failedLoginCount + 1;
+      const lock = count >= LOCK_AFTER;
+      await this.prisma.user.update({ where: { id: user.id }, data: { failedLoginCount: lock ? 0 : count, lockedUntil: lock ? new Date(Date.now() + LOCK_MINUTES * 60_000) : undefined } });
+      if (lock) {
+        await this.redis.client.del(`2fa:${challengeToken}`);
+        await this.mail.send(user.email, 'account-locked', { minutes: LOCK_MINUTES });
+        throw new AppError('ACCOUNT_LOCKED', `Too many failed attempts. Sign-in is locked for ${LOCK_MINUTES} minutes.`);
+      }
       throw new AppError('INVALID_2FA', 'Invalid authentication code.');
     }
     await this.redis.client.del(`2fa:${challengeToken}`);

@@ -23,7 +23,6 @@ import {
   pinSchema,
   savingsGoalSchema,
   savingsMoveSchema,
-  simulatePurchaseSchema,
   statementSchema,
   ticketCreateSchema,
   ticketReplySchema,
@@ -31,12 +30,11 @@ import {
   type EntryType,
 } from '@onebank/shared';
 import type { Response } from 'express';
-import { createReadStream, existsSync } from 'fs';
 import { z } from 'zod';
 import { AppError, notFound } from '../../common/app-error';
 import { parse } from '../../common/http';
 import { PrismaService } from '../../common/infra';
-import { uploadOptions, uploadPath } from '../../common/uploads';
+import { sendUpload, uploadOptions } from '../../common/uploads';
 import { CurrentUser, SessionId, UserAuthGuard } from '../auth/guards';
 import { FxService } from '../core/fx.service';
 import { LedgerService } from '../core/ledger.service';
@@ -80,6 +78,7 @@ export class AccountsController {
     return this.accounts.deposit(user, parse(depositSchema, body));
   }
 
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @Get('accounts/lookup')
   async lookup(@Query('recipient') recipient: string) {
     if (!recipient) throw new AppError('VALIDATION', 'Enter an account number or @tag');
@@ -97,7 +96,12 @@ export class AccountsController {
     const all = await this.accounts.transactions(user.id, { ...q, page: 1, pageSize: 100 });
     let rows = all.items;
     for (let p = 2; p <= Math.min(all.pages, 50); p++) rows = rows.concat((await this.accounts.transactions(user.id, { ...q, page: p, pageSize: 100 })).items);
-    const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const esc = (v: unknown) => {
+      // Neutralise spreadsheet formulas (=, +, @, tab/CR, or '-' not followed by a number).
+      let s = String(v ?? '');
+      if (/^[=+@\t\r]/.test(s) || /^-(?!\d)/.test(s)) s = `'${s}`;
+      return `"${s.replace(/"/g, '""')}"`;
+    };
     const csv = [
       ['Date', 'Reference', 'Type', 'Description', 'Counterparty', 'Account', 'Currency', 'Amount', 'Balance after', 'Status'].join(','),
       ...rows.map((r) =>
@@ -187,6 +191,7 @@ export class TransfersController {
     return this.transfers.banks(country);
   }
 
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @Get('name-enquiry')
   nameEnquiry(@Query('bankCode') bankCode: string, @Query('accountNumber') accountNumber: string) {
     return this.transfers.nameEnquiry(bankCode, accountNumber);
@@ -317,6 +322,7 @@ export class ProductsController {
     return this.products.billProviders(category);
   }
 
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @Post('bills/validate')
   validate(@Body() body: unknown) {
     const i = parse(billValidateSchema, body);
@@ -381,13 +387,6 @@ export class ProductsController {
   @Post('cards/:id/terminate')
   terminate(@CurrentUser() user: User, @Param('id') id: string, @Body() body: unknown) {
     return this.products.terminateCard(user, id, parse(z.object({ pin: pinSchema }), body).pin);
-  }
-
-  @Throttle(MONEY_THROTTLE)
-  @HttpCode(200)
-  @Post('cards/:id/simulate-purchase')
-  simulate(@CurrentUser() user: User, @Param('id') id: string, @Body() body: unknown) {
-    return this.products.simulatePurchase(user.id, id, parse(simulatePurchaseSchema, body));
   }
 
   @Get('cards/:id/transactions')
@@ -524,9 +523,8 @@ export class SupportController {
     const msg = await this.prisma.ticketMessage.findFirst({
       where: { ticket: { userId: user.id }, internal: false, attachments: { array_contains: [{ file }] } },
     });
-    const path = uploadPath('tickets', file);
-    if (!msg || !existsSync(path)) throw notFound('File');
-    createReadStream(path).pipe(res);
+    if (!msg) throw notFound('File');
+    sendUpload(res, 'tickets', file);
   }
 }
 

@@ -90,7 +90,7 @@ export function OpenAccountModal({ open, onClose, existing }: { open: boolean; o
   const [busy, setBusy] = useState<string | null>(null);
   return (
     <Modal open={open} onClose={onClose} title="Open a new account" subtitle="Each currency account comes with its own account number.">
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {CURRENCIES.map((c) => {
           const has = existing.includes(c);
           return (

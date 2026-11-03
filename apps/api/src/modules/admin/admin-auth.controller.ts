@@ -73,11 +73,22 @@ export class AdminAuthController {
   @Post('login/2fa')
   async login2fa(@Body() body: unknown, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const { challengeToken, code } = parse(z.object({ challengeToken: z.string(), code: z.string().regex(/^\d{6}$/) }), body);
-    const ch = await this.redis.getJson<{ adminId: string; setupSecret?: string }>(`a2fa:${challengeToken}`);
+    const key = `a2fa:${challengeToken}`;
+    const ch = await this.redis.getJson<{ adminId: string; setupSecret?: string; attempts?: number }>(key);
     if (!ch) throw new AppError('INVALID_TOKEN', 'Sign-in expired. Please start again.');
     const admin = await this.prisma.adminUser.findUniqueOrThrow({ where: { id: ch.adminId } });
+    if (admin.lockedUntil && admin.lockedUntil > new Date()) throw new AppError('ACCOUNT_LOCKED', 'Too many failed attempts. Try again later.');
     const secret = ch.setupSecret ?? admin.twoFactorSecret;
-    if (!secret || !authenticator.check(code, decrypt(secret))) throw new AppError('INVALID_2FA', 'Invalid authentication code.');
+    if (!secret || !authenticator.check(code, decrypt(secret))) {
+      // 3 tries per challenge; 5 consecutive failures lock the admin for 30 minutes.
+      const attempts = (ch.attempts ?? 0) + 1;
+      if (attempts >= 3) await this.redis.client.del(key);
+      else await this.redis.setJson(key, { ...ch, attempts }, ch.setupSecret ? 600 : 300);
+      const n = admin.failedLoginCount + 1;
+      await this.prisma.adminUser.update({ where: { id: admin.id }, data: { failedLoginCount: n >= 5 ? 0 : n, lockedUntil: n >= 5 ? new Date(Date.now() + 30 * 60_000) : undefined } });
+      await this.audit.log({ type: 'ADMIN', id: admin.id, email: admin.email, ip: deviceInfo(req).ip }, 'admin.2fa_failed');
+      throw new AppError('INVALID_2FA', attempts >= 3 ? 'Too many incorrect codes. Please sign in again.' : 'Invalid authentication code.');
+    }
     await this.redis.client.del(`a2fa:${challengeToken}`);
     const device = deviceInfo(req);
     const updated = await this.prisma.adminUser.update({

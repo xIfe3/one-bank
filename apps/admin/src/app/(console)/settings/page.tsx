@@ -88,7 +88,7 @@ export default function SettingsPage() {
         </div>
       </Card>
 
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <Card>
           <CardHeader title="Feature flags" subtitle="Switch individual services off without a deploy." />
           <div className="divide-y divide-navy-50">
@@ -108,7 +108,7 @@ export default function SettingsPage() {
 
         <Card>
           <CardHeader title="Thresholds & rates" />
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {(
               [
                 ['reviewThresholdUsd', 'Compliance review above (USD)'],

@@ -51,13 +51,15 @@ One Bank will never ask for your password, PIN or one-time codes by email or pho
 </td></tr></table></td></tr></table></body></html>`;
 }
 
+// Template data is loosely typed on purpose: each template documents the fields it reads.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type D = Record<string, any>;
 const web = (p: string) => `${config.webUrl}${p}`;
 
 const templates: Record<string, (d: D) => Block> = {
   'verify-email': (d) => ({
     subject: 'Verify your email address',
-    heading: `Welcome, ${esc(d.firstName)}`,
+    heading: `Welcome, ${d.firstName}`,
     paragraphs: ['Thanks for choosing One Bank. Please confirm your email address to activate your account.'],
     cta: { label: 'Verify email', url: d.url },
     note: 'This link expires in 24 hours. If you did not create a One Bank account, you can ignore this email.',
@@ -200,7 +202,7 @@ const templates: Record<string, (d: D) => Block> = {
     subject: d.subject,
     heading: d.subject,
     tone: d.tone ?? 'default',
-    paragraphs: [d.message],
+    paragraphs: [esc(d.message)],
     rows: d.rows,
     cta: { label: 'Manage cards', url: web('/app/cards') },
   }),
@@ -222,14 +224,14 @@ const templates: Record<string, (d: D) => Block> = {
     subject: d.subject,
     heading: d.subject,
     tone: 'success',
-    paragraphs: [d.message],
+    paragraphs: [esc(d.message)],
     cta: { label: 'View savings', url: web('/app/savings') },
   }),
   'loan-event': (d) => ({
     subject: d.subject,
     heading: d.subject,
     tone: d.tone ?? 'default',
-    paragraphs: [d.message],
+    paragraphs: [esc(d.message)],
     rows: d.rows,
     cta: { label: 'View loans', url: web('/app/loans') },
   }),
@@ -249,7 +251,7 @@ const templates: Record<string, (d: D) => Block> = {
     subject: d.subject,
     heading: d.subject,
     tone: d.tone ?? 'alert',
-    paragraphs: [d.message, ...(d.reason ? [`Reason: ${esc(d.reason)}`] : [])],
+    paragraphs: [esc(d.message), ...(d.reason ? [`Reason: ${esc(d.reason)}`] : [])],
     cta: { label: 'Contact support', url: web('/contact') },
   }),
   broadcast: (d) => ({

@@ -18,9 +18,12 @@ export interface DeviceInfo {
   location: string;
 }
 
+/**
+ * Client IP as resolved by Express using the `trust proxy` setting (main.ts trusts exactly one hop).
+ * Never read X-Forwarded-For directly: its first entry is client-controlled.
+ */
 export function clientIp(req: Request): string {
-  const fwd = (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim();
-  return (fwd || req.socket?.remoteAddress || '').replace('::ffff:', '');
+  return (req.ip || req.socket?.remoteAddress || '').replace('::ffff:', '');
 }
 
 export function deviceInfo(req: Request): DeviceInfo {

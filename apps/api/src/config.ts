@@ -32,3 +32,14 @@ export const config = {
   wireDelayMs: Number(process.env.WIRE_DELAY_MS ?? 180_000),
   uploadDir: process.env.UPLOAD_DIR ?? 'uploads',
 };
+
+if (config.env === 'production') {
+  const weak = (v: string) => v.length < 32 || /change-me/i.test(v) || /^0123456789abcdef/i.test(v);
+  const bad = [
+    ['JWT_ACCESS_SECRET', config.jwtAccessSecret],
+    ['JWT_ADMIN_SECRET', config.jwtAdminSecret],
+    ['ENCRYPTION_KEY', config.encryptionKey],
+  ].filter(([, v]) => weak(v));
+  if (bad.length) throw new Error(`Refusing to start in production with weak/sample secrets: ${bad.map(([k]) => k).join(', ')}`);
+  if (!/^[0-9a-f]{64}$/i.test(config.encryptionKey)) throw new Error('ENCRYPTION_KEY must be 64 hex characters (32 bytes)');
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import { CURRENCIES, formatMoney } from '@onebank/shared';
-import { Button, Card, CardHeader, EmptyState, Field, Input, KeyValue, Modal, PageHeader, Select, Skeleton, Stat, StatusBadge, cn, fmtDate, newIdempotencyKey } from '@onebank/ui';
+import { Button, Card, EmptyState, Field, Input, KeyValue, Modal, PageHeader, Select, Skeleton, Stat, StatusBadge, cn, fmtDate, newIdempotencyKey } from '@onebank/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Lock, PiggyBank, Plus, Target, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
@@ -74,14 +74,14 @@ export default function Savings() {
           </>
         }
       />
-      <div className="mb-6 grid gap-4 sm:grid-cols-3">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Stat label="Saved in goals" value={data.goals.length ? formatMoney(totalSaved, data.goals[0].currency) : '—'} sub={`${data.goals.length} goal(s)`} icon={<Target className="h-5 w-5" />} tone="navy" />
         <Stat label="Active deposits" value={String(active.length)} sub={active.length ? `Next maturity ${fmtDate(active.map((a) => a.maturesAt).sort()[0])}` : 'Lock funds for higher returns'} icon={<Lock className="h-5 w-5" />} />
         <Stat label="Goal interest rate" value={`${data.savingsRate}%`} sub="per annum, paid monthly" icon={<TrendingUp className="h-5 w-5" />} />
       </div>
       <h2 className="mb-3 font-serif text-lg text-navy-800">Savings goals</h2>
       {data.goals.length ? (
-        <div className="grid gap-5 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {data.goals.map((g) => (
             <Card key={g.id}>
               <div className="flex items-start justify-between">
@@ -135,7 +135,7 @@ export default function Savings() {
       )}
 
       <h2 className="mb-3 mt-10 font-serif text-lg text-navy-800">Fixed deposits</h2>
-      <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_320px]">
         <Card>
           {data.fixedDeposits.length ? (
             <div className="divide-y divide-navy-50">

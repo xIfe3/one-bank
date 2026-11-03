@@ -17,7 +17,7 @@ export default async function LegalPage({ params }: { params: Promise<{ doc: str
   const d = LEGAL[doc];
   if (!d) notFound();
   return (
-    <section className="container-x grid gap-12 pb-24 pt-36 lg:grid-cols-[220px_1fr]">
+    <section className="container-x grid grid-cols-1 gap-12 pb-24 pt-36 lg:grid-cols-[220px_1fr]">
       <aside className="space-y-1 lg:sticky lg:top-28 lg:self-start">
         <p className="eyebrow mb-3">Legal</p>
         {Object.entries(LEGAL).map(([k, v]) => (

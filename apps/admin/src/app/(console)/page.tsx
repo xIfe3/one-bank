@@ -52,7 +52,7 @@ export default function Dashboard() {
   const { data: activity } = useQuery({ queryKey: ['activity'], queryFn: () => api.get<ActivityItem[]>('/admin/activity'), refetchInterval: 15_000 });
   if (isLoading || !data)
     return (
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         {Array.from({ length: 8 }).map((_, i) => (
           <Skeleton key={i} className="h-28" />
         ))}
@@ -62,13 +62,13 @@ export default function Dashboard() {
   return (
     <>
       <PageHeader title="Bank overview" subtitle={`Live as of ${new Date().toLocaleTimeString()}`} />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat tone="navy" label="Customer deposits" value={compactUsd(k.depositsUsd)} sub="USD equivalent, all currencies" icon={<CircleDollarSign className="h-5 w-5" />} />
         <Stat label="Customers" value={k.users.toLocaleString()} sub={`+${k.newToday} today · +${k.newWeek} this week`} icon={<Users className="h-5 w-5" />} />
         <Stat label="Volume today" value={compactUsd(k.volumeToday.usd)} sub={`${k.volumeToday.count} transactions · ${compactUsd(k.volumeMonth.usd)} 30d`} icon={<ArrowLeftRight className="h-5 w-5" />} />
         <Stat label="Fee revenue (30d)" value={compactUsd(k.feesMonthUsd)} sub={`Loans outstanding ${compactUsd(k.loansOutstandingUsd)}`} icon={<Banknote className="h-5 w-5" />} />
       </div>
-      <div className="mt-4 grid gap-4 sm:grid-cols-3 xl:grid-cols-6">
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3 xl:grid-cols-6">
         {[
           ['Online now', k.activeSessions, MonitorSmartphone, '/sessions'],
           ['KYC pending', k.pendingKyc, ShieldCheck, '/kyc'],
@@ -90,7 +90,7 @@ export default function Dashboard() {
         })}
       </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader title="Money in vs out (30 days)" subtitle="Customer wallet flows, USD equivalent" />
           <ResponsiveContainer width="100%" height={260}>
@@ -141,7 +141,7 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
         <Card>
           <CardHeader title="Sign-ups (30 days)" subtitle={<span className="inline-flex items-center gap-1"><UserPlus className="h-3.5 w-3.5" /> new customers per day</span>} />
           <ResponsiveContainer width="100%" height={200}>

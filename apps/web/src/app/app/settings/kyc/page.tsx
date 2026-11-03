@@ -32,7 +32,7 @@ export default function KycPage() {
   const pending = data.submissions.find((s) => s.status === 'PENDING');
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1.2fr]">
       <Card>
         <CardHeader title="Verification level" subtitle={`You are at level ${data.kycLevel}`} />
         <ol className="space-y-4">
@@ -70,7 +70,7 @@ export default function KycPage() {
           <Card>
             <CardHeader title={`Upgrade to level ${next}`} subtitle={next === 2 ? 'Upload a government ID and a selfie holding it.' : 'Upload a recent utility bill or bank statement (last 3 months).'} />
             <div className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label="Document type">
                   <Select value={idType} onChange={(e) => setIdType(e.target.value)}>
                     {(next === 2

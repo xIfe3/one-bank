@@ -43,7 +43,7 @@ export default function Help() {
             ))}
           </div>
         ) : groups.length ? (
-          <div className="grid gap-10 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
             {groups.map(([cat, items]) => (
               <div key={cat}>
                 <h2 className="font-serif text-2xl text-navy-800">{cat}</h2>

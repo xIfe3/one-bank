@@ -198,7 +198,7 @@ function TransferPage() {
           </Link>
         }
       />
-      <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr]">
         <Card>
           <Tabs<Kind>
             value={kind}
@@ -268,7 +268,7 @@ function TransferPage() {
             )}
 
             {kind === 'WIRE' && (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {(
                   [
                     ['beneficiaryName', 'Beneficiary name'],
@@ -312,7 +312,7 @@ function TransferPage() {
                 </label>
               )}
               {schedule && (
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <Field label="Start date & time">
                     <Input type="datetime-local" value={when} min={new Date().toISOString().slice(0, 16)} onChange={(e) => setWhen(e.target.value)} />
                   </Field>

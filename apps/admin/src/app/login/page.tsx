@@ -42,7 +42,8 @@ function Login() {
     try {
       const r = await api.post<{ admin: { firstName: string } }>('/admin/auth/login/2fa', { challengeToken: step.challengeToken, code });
       toast.success(`Welcome, ${r.admin.firstName}`);
-      router.replace(next && next.startsWith('/') ? next : '/');
+      // Only same-origin paths: reject protocol-relative (//host) and backslash tricks.
+      router.replace(next && /^\/(?![\/\\])/.test(next) ? next : '/');
     } catch (err) {
       setError((err as Error).message);
       setCode('');

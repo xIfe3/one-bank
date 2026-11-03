@@ -10,13 +10,13 @@ export default function Home() {
       <section className="relative overflow-hidden bg-navy-deep pb-24 pt-36 text-white">
         <div className="pointer-events-none absolute -right-40 top-10 h-[520px] w-[520px] rounded-full bg-gold-500/15 blur-3xl" />
         <div className="pointer-events-none absolute -left-40 bottom-0 h-[420px] w-[420px] rounded-full bg-navy-500/30 blur-3xl" />
-        <div className="container-x relative grid items-center gap-16 lg:grid-cols-[1.1fr_1fr]">
+        <div className="container-x relative grid grid-cols-1 items-center gap-16 lg:grid-cols-[1.1fr_1fr]">
           <div className="animate-fade-up">
             <span className="inline-flex items-center gap-2 rounded-full border border-gold-500/30 bg-gold-500/10 px-3.5 py-1.5 text-xs font-semibold text-gold-300">
               <Sparkles className="h-3.5 w-3.5" /> Now with 10% p.a. fixed deposits
             </span>
             <h1 className="mt-6 font-display text-5xl leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-              Private-grade banking, <span className="bg-gold-sheen bg-clip-text text-transparent">for everyone.</span>
+              Private‑grade banking, <span className="bg-gold-sheen bg-clip-text text-transparent">for everyone.</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-navy-200">
               Hold dollars, euros and pounds in one account. Send money instantly, spend with virtual cards, and grow your wealth — protected by bank-grade security at every step.
@@ -107,7 +107,7 @@ export default function Home() {
 
       {/* How it works */}
       <section className="bg-white py-24">
-        <div className="container-x grid items-center gap-16 lg:grid-cols-2">
+        <div className="container-x grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
           <div>
             <p className="eyebrow">How it works</p>
             <h2 className="h-section mt-3 text-navy-800">Open an account in three steps.</h2>
@@ -133,7 +133,7 @@ export default function Home() {
 
       {/* Security */}
       <section className="container-x py-24">
-        <div className="grid gap-12 rounded-[32px] bg-navy-deep p-10 text-white sm:p-14 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-12 rounded-[32px] bg-navy-deep p-10 text-white sm:p-14 lg:grid-cols-2">
           <div>
             <p className="eyebrow text-gold-400">Security first</p>
             <h2 className="mt-3 font-display text-3xl sm:text-4xl">Your money, guarded like a vault.</h2>
@@ -142,7 +142,7 @@ export default function Home() {
               How we protect you <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {[
               [<Lock key="l" className="h-5 w-5" />, 'Two-factor authentication', 'Authenticator apps and backup codes.'],
               [<Smartphone key="s" className="h-5 w-5" />, 'Device management', 'See every signed-in device and remove it remotely.'],
@@ -164,7 +164,7 @@ export default function Home() {
         <div className="container-x">
           <p className="eyebrow text-center">Loved by members</p>
           <h2 className="h-section mt-3 text-center text-navy-800">Banking people actually recommend.</h2>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
+          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
             {[
               ['“Paying my team in Lagos and London from one account used to take days. Now it takes seconds.”', 'Ngozi A.', 'Founder, Lagos'],
               ['“The fixed deposit rates are excellent and the app feels genuinely premium. I moved my savings over in a week.”', 'James W.', 'Architect, London'],
@@ -185,7 +185,7 @@ export default function Home() {
 
       {/* App download */}
       <section className="container-x py-24">
-        <div className="grid items-center gap-10 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
           <div>
             <p className="eyebrow">Bank on the go</p>
             <h2 className="h-section mt-3 text-navy-800">One Bank, wherever you are.</h2>

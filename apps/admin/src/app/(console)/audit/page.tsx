@@ -44,7 +44,7 @@ export default function Audit() {
         }
       />
       <Card className="mb-4" padded={false}>
-        <div className="grid gap-3 p-4 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 p-4 md:grid-cols-4">
           <Input prefix={<Search className="h-4 w-4" />} value={f.q} onChange={(e) => setF({ ...f, q: e.target.value })} placeholder="Actor email, target ID, reason" />
           <Input value={f.action} onChange={(e) => setF({ ...f, action: e.target.value })} placeholder="Action (e.g. ledger., user.status)" />
           <Input type="date" value={f.from} onChange={(e) => setF({ ...f, from: e.target.value })} />
@@ -95,7 +95,7 @@ export default function Audit() {
       </Card>
       {view && (
         <Modal open onClose={() => setView(null)} title={view.action} subtitle={`${view.actorEmail ?? view.actorType} · ${fmtDateTime(view.createdAt)}`} size="xl">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {(['before', 'after'] as const).map((k) => (
               <div key={k}>
                 <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-navy-400">{k}</p>

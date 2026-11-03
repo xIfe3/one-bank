@@ -1,6 +1,6 @@
 'use client';
 
-import { Alert, Avatar, Button, Logo, Spinner, cn, timeAgo } from '@onebank/ui';
+import { Alert, ApiError, Avatar, Button, Logo, Spinner, cn, timeAgo } from '@onebank/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeftRight,
@@ -55,7 +55,9 @@ interface Notif {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { data: me, isLoading, isError } = useMeQuery();
+  const { data: me, isLoading, error } = useMeQuery();
+  // Maintenance (503) is handled by the API client's redirect to /maintenance — don't treat it as signed out.
+  const isError = !!error && !(error instanceof ApiError && error.status === 503);
   const [mobile, setMobile] = useState(false);
   useLiveUpdates(!!me);
   useEffect(() => setMobile(false), [pathname]);

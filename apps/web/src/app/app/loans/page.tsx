@@ -71,7 +71,7 @@ export default function Loans() {
             {l.status === 'REJECTED' && <Alert tone="danger">Not approved{l.decisionNote ? `: ${l.decisionNote}` : '.'}</Alert>}
             {['DISBURSED', 'DEFAULTED', 'REPAID'].includes(l.status) && (
               <>
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   <div>
                     <p className="text-xs text-navy-400">Repaid</p>
                     <p className="font-sans tabular-nums tracking-tight text-2xl font-semibold text-navy-800">{formatMoney(l.amountRepaid, l.currency)}</p>
@@ -120,7 +120,7 @@ export default function Loans() {
       })}
       <h2 className="mb-3 font-serif text-lg text-navy-800">Loan products</h2>
       {products?.length ? (
-        <div className="grid gap-5 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {products.map((p) => (
             <Card key={p.id}>
               <div className="flex items-start justify-between">

@@ -21,7 +21,7 @@ export default function ReferralsPage() {
     toast.success('Copied to clipboard');
   };
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1.2fr]">
       <Card className="border-0 bg-navy-deep text-white">
         <Gift className="h-10 w-10 text-gold-300" />
         <h2 className="mt-4 font-serif text-2xl">Invite friends, earn ${status?.referralBonusUsd ?? 10}</h2>

@@ -39,13 +39,13 @@ export default function Support() {
   return (
     <>
       <PageHeader title="Support inbox" />
-      <div className="mb-5 grid gap-4 sm:grid-cols-3">
+      <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Stat label="In this view" value={data?.total ?? '—'} icon={<Inbox className="h-5 w-5" />} />
         <Stat label="Avg first response (30d)" value={data?.sla.avgFirstResponseHours ? `${data.sla.avgFirstResponseHours}h` : '—'} icon={<Clock className="h-5 w-5" />} />
         <Stat label="Avg resolution (30d)" value={data?.sla.avgResolutionHours ? `${data.sla.avgResolutionHours}h` : '—'} icon={<Timer className="h-5 w-5" />} />
       </div>
       <Card className="mb-4" padded={false}>
-        <div className="grid gap-3 p-4 md:grid-cols-[1fr_170px_150px_170px]">
+        <div className="grid grid-cols-1 gap-3 p-4 md:grid-cols-[1fr_170px_150px_170px]">
           <Input prefix={<Search className="h-4 w-4" />} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Subject or customer email" />
           <Select value={status} onChange={(e) => (setStatus(e.target.value), setPage(1))}>
             <option value="">Open & pending</option>

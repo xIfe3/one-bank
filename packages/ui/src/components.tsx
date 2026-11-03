@@ -187,7 +187,7 @@ export function PinInput({ value, onChange, length = 4, autoFocus }: { value: st
 
 export function Card({ className, children, padded = true, ...rest }: { className?: string; children: ReactNode; padded?: boolean } & React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn('rounded-2xl border border-navy-100/70 bg-white shadow-card', padded && 'p-5 sm:p-6', className)} {...rest}>
+    <div className={cn('min-w-0 rounded-2xl border border-navy-100/70 bg-white shadow-card', padded && 'p-5 sm:p-6', className)} {...rest}>
       {children}
     </div>
   );

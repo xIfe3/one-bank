@@ -81,7 +81,7 @@ export default function Bills() {
   return (
     <>
       <PageHeader title="Pay bills" subtitle="Electricity, TV, internet, water, airtime and data — paid instantly." />
-      <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr]">
         <Card>
           {result ? (
             <div className="py-6 text-center">
@@ -124,7 +124,7 @@ export default function Bills() {
               {!providers ? (
                 <Skeleton className="h-20" />
               ) : (
-                <div className="grid gap-2 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {list.map((p) => (
                     <button key={p.id} onClick={() => setProviderId(p.id)} className={cn('flex items-center gap-3 rounded-2xl border p-3 text-left', providerId === p.id ? 'border-gold-500 bg-gold-50' : 'border-navy-100 hover:border-navy-300')}>
                       <span className="grid h-10 w-10 place-items-center rounded-xl text-sm font-bold text-white" style={{ background: p.logoColor }}>
@@ -156,7 +156,7 @@ export default function Bills() {
                   {wallets.length === 0 ? (
                     <Alert tone="warning">You need a {provider.currencies.join(' or ')} account to pay {provider.name}.</Alert>
                   ) : (
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <Field label="Pay from">
                         <Select value={from?.id} onChange={(e) => setFromId(e.target.value)}>
                           {wallets.map((w) => (

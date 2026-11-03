@@ -119,8 +119,9 @@ Roles: **SUPERADMIN** (everything), **ADMIN**, **SUPPORT**, **COMPLIANCE**. Each
 
 ```bash
 pnpm --filter @onebank/shared test     # money maths (vitest)
-pnpm --filter @onebank/api test        # 20 API integration tests against a separate onebank_test DB
-pnpm test:e2e                          # Playwright, against the running stack (uses installed Chrome)
+pnpm --filter @onebank/api test        # 23 API integration tests against a separate onebank_test DB
+pnpm test:e2e                          # 3 Playwright journeys against the running stack (uses installed Chrome)
+pnpm lint                              # ESLint for web, admin and API
 ```
 
 The API suite covers:
@@ -141,8 +142,11 @@ The API suite covers:
 - role permissions
 - maintenance mode and feature flags
 - the review queue and the one-time-code step for large payments
+- security hardening: CSV formula neutralising, upload sanitising, no customer card-simulation endpoint
 
 Each run creates the `onebank_test` database if needed, applies migrations and seeds it. It never wipes a database.
+
+The e2e journeys cover signup with email verification via the mail catcher, a member-to-member transfer, and an admin suspending and reinstating a customer and toggling maintenance mode. The admin journey enrols the seeded superadmin in 2FA, so run `pnpm seed:reset-admin-2fa` afterwards.
 
 ## Useful settings (apps/api/.env)
 

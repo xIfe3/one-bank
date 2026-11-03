@@ -57,7 +57,7 @@ export default function Security() {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {[
           { title: 'Password', desc: 'Change your sign-in password.', icon: Lock, action: <Button size="sm" variant="outline" onClick={() => setModal('password')}>Change</Button> },
           {

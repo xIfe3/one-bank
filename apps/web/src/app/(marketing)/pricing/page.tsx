@@ -37,7 +37,7 @@ export default function Pricing() {
         </div>
       </section>
       <section className="container-x py-16">
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {TIERS.map((t) => (
             <div key={t.name} className={t.featured ? 'rounded-3xl bg-navy-deep p-8 text-white shadow-lift' : 'rounded-3xl border border-navy-100 bg-white p-8'}>
               <p className={t.featured ? 'eyebrow text-gold-300' : 'eyebrow'}>{t.level}</p>

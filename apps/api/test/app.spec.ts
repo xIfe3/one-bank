@@ -193,6 +193,44 @@ describe('ledger & money movement', () => {
   });
 });
 
+describe('security hardening', () => {
+  it('neutralises spreadsheet formulas in CSV exports', async () => {
+    const { client, wallet } = await newCustomer(app, { fund: 50 });
+    await client.post('/transfers/internal', { fromAccountId: wallet.id, recipient: '@alex', amount: 1, narration: '=HYPERLINK("http://evil.test")', pin: PIN, idempotencyKey: key() });
+    const csv = await client.get('/transactions/export.csv');
+    expect(csv.status).toBe(200);
+    expect(csv.text).toContain(`"'=HYPERLINK(""http://evil.test"")"`);
+    expect(csv.text).not.toMatch(/,"=HYPERLINK/);
+  });
+
+  it('does not expose a customer endpoint for simulated card purchases', async () => {
+    const { client } = await newCustomer(app);
+    const r = await client.post('/cards/any-card-id/simulate-purchase', { merchant: 'Shop', amount: 1 });
+    expect(r.status).toBe(404);
+  });
+
+  it('stores uploads with a server-chosen extension and serves them with safe headers', async () => {
+    const { client, user } = await newCustomer(app);
+    const request = (await import('supertest')).default;
+    const res = await request(app.getHttpServer())
+      .post('/api/v1/support/tickets')
+      .set('Cookie', `ob_at=${client.cookie('ob_at')}; ob_csrf=${client.cookie('ob_csrf')}`)
+      .set('x-csrf-token', client.cookie('ob_csrf')!)
+      .field('subject', 'Disguised upload')
+      .field('category', 'OTHER')
+      .field('message', 'Attachment test')
+      .attach('files', Buffer.from('<script>alert(1)</script>'), { filename: 'evil.html', contentType: 'image/png' });
+    expect(res.status).toBe(201);
+    const msg = await prisma.ticketMessage.findFirstOrThrow({ where: { ticket: { userId: user.id }, authorType: 'USER' } });
+    const file = (msg.attachments as { file: string }[])[0].file;
+    expect(file).toMatch(/\.png$/);
+    const served = await client.get(`/support/attachments/${file}`);
+    expect(served.headers['content-type']).toBe('image/png');
+    expect(served.headers['x-content-type-options']).toBe('nosniff');
+    expect(served.headers['content-security-policy']).toContain('sandbox');
+  });
+});
+
 describe('admin controls', () => {
   it('suspended customers cannot move money; blocked customers cannot sign in', async () => {
     const admin = await adminClient(app);

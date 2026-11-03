@@ -15,13 +15,12 @@ import {
   updateProfileSchema,
 } from '@onebank/shared';
 import type { Request, Response } from 'express';
-import { createReadStream, existsSync } from 'fs';
 import { z } from 'zod';
 import { config } from '../../config';
 import { AppError, notFound } from '../../common/app-error';
 import { clientIp, parse } from '../../common/http';
 import { PrismaService } from '../../common/infra';
-import { uploadOptions, uploadPath } from '../../common/uploads';
+import { sendUpload, uploadOptions } from '../../common/uploads';
 import { AuthService } from '../auth/auth.service';
 import { AdminAuthGuard, CurrentAdmin, Roles, SessionId } from '../auth/guards';
 import { SessionService } from '../auth/session.service';
@@ -553,10 +552,7 @@ export class AdminOpsController {
   @Roles('ADMIN', 'COMPLIANCE')
   @Get('kyc/files/:file')
   kycFile(@Param('file') file: string, @Res() res: Response) {
-    const path = uploadPath('kyc', file);
-    if (!existsSync(path)) throw notFound('File');
-    if (file.endsWith('.pdf')) res.setHeader('Content-Type', 'application/pdf');
-    createReadStream(path).pipe(res);
+    sendUpload(res, 'kyc', file);
   }
 
   // ----- support -----
@@ -615,9 +611,7 @@ export class AdminOpsController {
 
   @Get('tickets/attachments/:file')
   attachment(@Param('file') file: string, @Res() res: Response) {
-    const path = uploadPath('tickets', file);
-    if (!existsSync(path)) throw notFound('File');
-    createReadStream(path).pipe(res);
+    sendUpload(res, 'tickets', file);
   }
 
   @Get('canned-replies')
@@ -1032,7 +1026,12 @@ export class AdminPlatformController {
     };
     if (q.format === 'csv') {
       const rows = await this.prisma.auditLog.findMany({ where, orderBy: { createdAt: 'desc' }, take: 5000 });
-      const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+      const esc = (v: unknown) => {
+        // Neutralise spreadsheet formulas (=, +, @, tab/CR, or '-' not followed by a number).
+        let s = String(v ?? '');
+        if (/^[=+@\t\r]/.test(s) || /^-(?!\d)/.test(s)) s = `'${s}`;
+        return `"${s.replace(/"/g, '""')}"`;
+      };
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', 'attachment; filename="onebank-audit.csv"');
       return ['Time,Actor,Action,Target type,Target id,Reason,IP', ...rows.map((r) => [r.createdAt.toISOString(), r.actorEmail ?? r.actorId, r.action, r.targetType, r.targetId, r.reason, r.ip].map(esc).join(','))].join('\n');

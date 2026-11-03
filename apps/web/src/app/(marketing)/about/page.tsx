@@ -16,7 +16,7 @@ export default function About() {
           </p>
         </div>
       </section>
-      <section className="container-x grid gap-10 py-20 lg:grid-cols-4">
+      <section className="container-x grid grid-cols-1 gap-10 py-20 lg:grid-cols-4">
         {[
           ['2024', 'Founded in New York'],
           ['3', 'major currencies'],
@@ -46,7 +46,7 @@ export default function About() {
       </section>
       <section className="container-x py-20">
         <h2 className="h-section text-navy-800">Leadership</h2>
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {[
             ['Olivia Grant', 'Chief Executive Officer'],
             ['Daniel Reyes', 'Chief Operating Officer'],

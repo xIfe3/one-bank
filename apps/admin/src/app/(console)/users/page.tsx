@@ -42,7 +42,7 @@ export default function Users() {
     <>
       <PageHeader title="Users" subtitle={data ? `${data.total.toLocaleString()} customers` : undefined} />
       <Card className="mb-4" padded={false}>
-        <div className="grid gap-3 p-4 sm:grid-cols-[1fr_200px_160px]">
+        <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-[1fr_200px_160px]">
           <Input prefix={<Search className="h-4 w-4" />} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, email, phone, @tag or account number" />
           <Select value={status} onChange={(e) => (setStatus(e.target.value), setPage(1))}>
             <option value="">All statuses</option>

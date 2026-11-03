@@ -35,7 +35,7 @@ export default function Profile() {
     </Field>
   );
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
       <Card>
         <CardHeader title="Personal details" />
         <form
@@ -49,14 +49,14 @@ export default function Profile() {
             });
           }}
         >
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {field('firstName', 'First name')}
             {field('lastName', 'Last name')}
           </div>
           <Field label="One Bank @tag" error={form.errors.tag}><Input value={v.tag ?? ''} onChange={form.set('tag')} placeholder="yourname" prefix="@" /></Field>
           {field('phone', 'Phone number', { type: 'tel' })}
           {field('addressLine1', 'Street address')}
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {field('city', 'City')}
             {field('state', 'State')}
             {field('postalCode', 'Postal code')}

@@ -54,7 +54,7 @@ export default function TicketDetail() {
       <Link href="/support" className="mb-4 inline-flex items-center gap-1 text-sm text-navy-500 hover:text-navy-800">
         <ArrowLeft className="h-4 w-4" /> Inbox
       </Link>
-      <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
         <Card>
           <div className="mb-5 border-b border-navy-50 pb-4">
             <p className="text-xs text-navy-400">Ticket #{t.number}</p>

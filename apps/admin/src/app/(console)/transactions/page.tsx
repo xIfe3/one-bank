@@ -37,7 +37,7 @@ export default function Transactions() {
     <>
       <PageHeader title="Transactions" subtitle={data ? `${data.total.toLocaleString()} journal entries` : undefined} />
       <Card className="mb-4" padded={false}>
-        <div className="grid gap-3 p-4 md:grid-cols-6">
+        <div className="grid grid-cols-1 gap-3 p-4 md:grid-cols-6">
           <div className="md:col-span-2">
             <Input prefix={<Search className="h-4 w-4" />} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Reference, description, counterparty" />
           </div>

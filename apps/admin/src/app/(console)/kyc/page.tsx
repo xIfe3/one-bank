@@ -45,7 +45,7 @@ export default function Kyc() {
       {isLoading ? (
         <Skeleton className="h-60" />
       ) : data?.length ? (
-        <div className="grid gap-5 xl:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
           {data.map((s) => (
             <Card key={s.id}>
               <div className="flex items-start justify-between">

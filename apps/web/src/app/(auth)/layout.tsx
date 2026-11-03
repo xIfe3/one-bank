@@ -5,7 +5,7 @@ import { CardVisual } from '@/components/marketing';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid min-h-screen lg:grid-cols-[1fr_1.1fr]">
+    <div className="grid grid-cols-1 min-h-screen lg:grid-cols-[1fr_1.1fr]">
       <aside className="relative hidden overflow-hidden bg-navy-deep p-12 text-white lg:flex lg:flex-col lg:justify-between">
         <div className="pointer-events-none absolute -right-32 top-1/3 h-96 w-96 rounded-full bg-gold-500/20 blur-3xl" />
         <Link href="/">

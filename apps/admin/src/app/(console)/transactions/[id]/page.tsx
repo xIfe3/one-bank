@@ -48,7 +48,7 @@ export default function TxDetail() {
       <Link href="/transactions" className="mb-4 inline-flex items-center gap-1 text-sm text-navy-500 hover:text-navy-800">
         <ArrowLeft className="h-4 w-4" /> Transactions
       </Link>
-      <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.4fr_1fr]">
         <div className="space-y-6">
           <Card>
             <div className="flex flex-wrap items-start justify-between gap-4">

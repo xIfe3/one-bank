@@ -56,7 +56,7 @@ function CardsPage() {
     <>
       <PageHeader title="Cards" subtitle={data ? `${data.total} virtual cards` : undefined} />
       <Card className="mb-4" padded={false}>
-        <div className="grid gap-3 p-4 sm:grid-cols-[1fr_180px]">
+        <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-[1fr_180px]">
           <Input prefix={<Search className="h-4 w-4" />} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Last 4, name on card or email" />
           <Select value={status} onChange={(e) => (setStatus(e.target.value), setPage(1))}>
             <option value="">Any status</option>
@@ -176,7 +176,7 @@ function SimModal({ card, onClose, onDone }: { card: C; onClose: () => void; onD
         </Button>
       }
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Merchant">
           <Input value={merchant} onChange={(e) => setMerchant(e.target.value)} />
         </Field>

@@ -34,7 +34,7 @@ export default function Team() {
   return (
     <>
       <PageHeader title="Admin team" subtitle="Staff with access to this console." actions={superadmin && <Button icon={<UserPlus className="h-4 w-4" />} onClick={() => setInvite(true)}>Invite admin</Button>} />
-      <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {Object.entries(ROLE_DESC).map(([r, d]) => (
           <Card key={r} className="p-4 sm:p-4">
             <Badge tone="gold">{r}</Badge>
@@ -135,7 +135,7 @@ function InviteModal({ onClose }: { onClose: () => void }) {
         </Button>
       }
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="First name">
           <Input value={f.firstName} onChange={(e) => setF({ ...f, firstName: e.target.value })} />
         </Field>

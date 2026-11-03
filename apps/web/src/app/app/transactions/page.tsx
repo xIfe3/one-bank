@@ -56,7 +56,7 @@ function TransactionsPage() {
         }
       />
       <Card className="mb-5" padded={false}>
-        <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-6">
+        <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-6">
           <div className="lg:col-span-2">
             <Input prefix={<Search className="h-4 w-4" />} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search description, reference…" aria-label="Search transactions" />
           </div>

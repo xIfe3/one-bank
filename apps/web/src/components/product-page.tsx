@@ -24,9 +24,9 @@ export function ProductPage(c: ProductContent) {
       {c.extra}
       {c.highlights && (
         <section className="bg-white py-20">
-          <div className="container-x grid gap-10 lg:grid-cols-[1fr_1.4fr]">
+          <div className="container-x grid grid-cols-1 gap-10 lg:grid-cols-[1fr_1.4fr]">
             <h2 className="h-section text-navy-800">{c.highlights.title}</h2>
-            <ul className="grid gap-4 sm:grid-cols-2">
+            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {c.highlights.points.map((p) => (
                 <li key={p} className="flex gap-3 rounded-2xl border border-navy-100 bg-ivory p-5 text-sm text-navy-700">
                   <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-gold-sheen text-navy-900">

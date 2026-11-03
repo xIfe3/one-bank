@@ -102,7 +102,7 @@ function Banks() {
     <Card>
       <CardHeader title="Banks" subtitle="Available destinations for domestic transfers." />
       {editable && (
-        <div className="mb-4 grid gap-2 sm:grid-cols-[140px_1fr_100px_auto]">
+        <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-[140px_1fr_100px_auto]">
           <Input placeholder="Code" value={f.code} onChange={(e) => setF({ ...f, code: e.target.value.toUpperCase() })} />
           <Input placeholder="Bank name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
           <Input placeholder="CC" value={f.country} onChange={(e) => setF({ ...f, country: e.target.value.toUpperCase().slice(0, 2) })} />
@@ -190,7 +190,7 @@ function Billers() {
             </Button>
           }
         >
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Code">
               <Input value={edit.code} onChange={(e) => setEdit({ ...edit, code: e.target.value.toUpperCase() })} />
             </Field>

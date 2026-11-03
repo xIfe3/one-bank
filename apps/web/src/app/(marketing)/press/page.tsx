@@ -22,7 +22,7 @@ export default function Press() {
         </Link>
         .
       </p>
-      <div className="mt-12 grid gap-5 md:grid-cols-2">
+      <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2">
         {NEWS.map(([d, t]) => (
           <article key={t} className="rounded-3xl border border-navy-100 bg-white p-7">
             <p className="text-xs font-semibold uppercase tracking-widest text-gold-600">{d}</p>

@@ -74,6 +74,7 @@ test('send money to another member and see both balances update', async ({ page 
 });
 
 test('admin suspends a customer, who can no longer send money; maintenance mode shows the maintenance page', async ({ page, browser }) => {
+  test.setTimeout(180_000); // two browsers + several admin round-trips
   // Admin signs in (TOTP set up on first login if needed).
   const admin = await browser.newPage();
   await admin.goto(`${ADMIN}/login`);
@@ -92,7 +93,7 @@ test('admin suspends a customer, who can no longer send money; maintenance mode 
   await admin.getByText('Ada Okafor').click();
   await admin.getByRole('button', { name: 'Suspend' }).click();
   await admin.getByPlaceholder('Explain why you are taking this action').fill('E2E suspension check');
-  await admin.getByRole('button', { name: 'Suspend account' }).click();
+  await Promise.all([admin.waitForResponse((r) => r.url().includes('/status') && r.ok()), admin.getByRole('button', { name: 'Suspend account' }).click()]);
 
   await login(page, 'ada@onebank.test', 'Demo@OneBank2026');
   await expect(page.getByText('Your account is suspended')).toBeVisible();
@@ -100,15 +101,27 @@ test('admin suspends a customer, who can no longer send money; maintenance mode 
   // Reinstate + maintenance on/off
   await admin.getByRole('button', { name: 'Reinstate' }).click();
   await admin.getByPlaceholder('Explain why you are taking this action').fill('E2E done');
-  await admin.getByRole('button', { name: 'Reinstate account' }).click();
+  await Promise.all([admin.waitForResponse((r) => r.url().includes('/status') && r.ok()), admin.getByRole('button', { name: 'Reinstate account' }).click()]);
 
   await admin.goto(`${ADMIN}/settings`);
   await admin.getByRole('button', { name: 'Enable maintenance' }).click();
-  await admin.getByRole('button', { name: 'Enable now' }).click();
-  await page.goto('/app/accounts');
-  await expect(page).toHaveURL(/maintenance/);
-  await admin.getByRole('button', { name: 'Turn off maintenance' }).click();
-  await admin.getByRole('button', { name: 'Bring the bank back online' }).click();
+  try {
+    await Promise.all([
+      admin.waitForResponse((r) => r.url().endsWith('/admin/settings') && r.request().method() === 'PUT' && r.ok()),
+      admin.getByRole('button', { name: 'Enable now' }).click(),
+    ]);
+    await page.goto('/app/accounts');
+    await expect(page).toHaveURL(/maintenance/);
+    await expect(page.getByText('polishing the vault')).toBeVisible();
+  } finally {
+    // Always bring the bank back online, even if an assertion above failed.
+    await admin.goto(`${ADMIN}/settings`);
+    await admin.getByRole('button', { name: 'Turn off maintenance' }).click();
+    await Promise.all([
+      admin.waitForResponse((r) => r.url().endsWith('/admin/settings') && r.request().method() === 'PUT' && r.ok()),
+      admin.getByRole('button', { name: 'Bring the bank back online' }).click(),
+    ]);
+  }
   const status = await fetch(`${API}/public/status`).then((r) => r.json());
   expect(status.maintenanceMode).toBe(false);
 });

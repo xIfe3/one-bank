@@ -77,7 +77,7 @@ function Broadcast() {
     }
   };
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
       <Card>
         <CardHeader title="Compose" />
         <div className="space-y-4">

@@ -180,7 +180,7 @@ export default function UserDetail() {
       />
 
       {tab === 'overview' && (
-        <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.5fr_1fr]">
           <div className="space-y-6">
             <Card>
               <CardHeader title="Accounts" subtitle="Balances are live from the ledger." />
@@ -345,7 +345,7 @@ export default function UserDetail() {
         </Card>
       )}
       {tab === 'products' && (
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader title="Loans" />
             {data.loans.length ? (
@@ -677,7 +677,7 @@ function EditProfile({ user, onClose }: { user: Detail['user']; onClose: () => v
         </Button>
       }
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {(['firstName', 'lastName', 'email', 'phone', 'addressLine1', 'city', 'state', 'postalCode'] as const).map((k) => (
           <Field key={k} label={k.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase())}>
             <Input value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} />
