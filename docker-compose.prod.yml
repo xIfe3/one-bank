@@ -1,0 +1,104 @@
+# One Bank production stack for Dokploy (Compose deployment).
+# Set the variables from .env.production.example in Dokploy's "Environment" tab, then add domains
+# in the "Domains" tab: web -> port 3000, admin -> port 3000, api -> port 4100.
+name: onebank
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: onebank
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: onebank
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U onebank"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    environment:
+      NODE_ENV: production
+      API_PORT: 4100
+      DATABASE_URL: postgresql://onebank:${POSTGRES_PASSWORD}@postgres:5432/onebank
+      REDIS_URL: redis://redis:6379
+      WEB_URL: ${WEB_URL:?set WEB_URL}
+      ADMIN_URL: ${ADMIN_URL:?set ADMIN_URL}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?set JWT_ACCESS_SECRET}
+      JWT_ADMIN_SECRET: ${JWT_ADMIN_SECRET:?set JWT_ADMIN_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?set ENCRYPTION_KEY}
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN:?set COOKIE_DOMAIN}
+      COOKIE_SECURE: "true"
+      SMTP_HOST: ${SMTP_HOST:?set SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      MAIL_FROM: ${MAIL_FROM:?set MAIL_FROM}
+      ADMIN_IP_ALLOWLIST: ${ADMIN_IP_ALLOWLIST:-}
+      # Cloudflare proxy (orange cloud) + Traefik = 2. Set 1 if you turn the proxy off.
+      TRUST_PROXY_HOPS: ${TRUST_PROXY_HOPS:-2}
+      R2_ACCOUNT_ID: ${R2_ACCOUNT_ID:?set R2_ACCOUNT_ID}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID:?set R2_ACCESS_KEY_ID}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY:?set R2_SECRET_ACCESS_KEY}
+      R2_BUCKET: ${R2_BUCKET:?set R2_BUCKET}
+      SETTLEMENT_DELAY_MS: ${SETTLEMENT_DELAY_MS:-30000}
+      WIRE_DELAY_MS: ${WIRE_DELAY_MS:-180000}
+      RUN_SEED: ${RUN_SEED:-true}
+      SEED_MODE: ${SEED_MODE:-production}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+    expose: ["4100"]
+    networks: [default, dokploy-network]
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/next.Dockerfile
+      args:
+        APP: web
+        NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL:?set PUBLIC_API_URL}
+        NEXT_PUBLIC_SITE_URL: ${WEB_URL}
+    restart: unless-stopped
+    depends_on: [api]
+    expose: ["3000"]
+    networks: [dokploy-network]
+
+  admin:
+    build:
+      context: .
+      dockerfile: docker/next.Dockerfile
+      args:
+        APP: admin
+        NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL}
+        NEXT_PUBLIC_WEB_URL: ${WEB_URL}
+    restart: unless-stopped
+    depends_on: [api]
+    expose: ["3000"]
+    networks: [dokploy-network]
+
+volumes:
+  pgdata:
+  redisdata:
+
+networks:
+  dokploy-network:
+    external: true

@@ -5,6 +5,7 @@ import argon2 from 'argon2';
 import { createHash, randomInt } from 'crypto';
 import Decimal from 'decimal.js';
 import { encrypt, generatePan, generateReference, randomCode } from '../src/common/crypto';
+import { putUpload } from '../src/common/uploads';
 
 const prisma = new PrismaClient();
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'NGN'];
@@ -394,17 +395,42 @@ async function seedCustomers() {
 }
 
 async function seedSampleUploads() {
-  const { mkdirSync, writeFileSync, existsSync } = await import('fs');
-  const { resolve } = await import('path');
-  const dir = resolve(process.env.UPLOAD_DIR ?? 'uploads', 'kyc');
-  mkdirSync(dir, { recursive: true });
-  // 1x1 PNG placeholders so the KYC review screen has something to show.
+  // 1x1 PNG placeholders so the KYC review screen has something to show (R2 or local disk).
   const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
-  for (const f of ['sample-id.png', 'sample-selfie.png']) if (!existsSync(resolve(dir, f))) writeFileSync(resolve(dir, f), png);
+  for (const f of ['sample-id.png', 'sample-selfie.png']) await putUpload('kyc', f, png, 'image/png');
+}
+
+/**
+ * Production bootstrap: reference data only, plus one superadmin from env.
+ * Never creates the demo customers/admins (their passwords are public in the README).
+ */
+async function seedProductionAdmin() {
+  const email = process.env.SEED_ADMIN_EMAIL;
+  const password = process.env.SEED_ADMIN_PASSWORD;
+  if (!email || !password) {
+    console.log('SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD not set: skipping superadmin bootstrap.');
+    return;
+  }
+  if (password.length < 12) throw new Error('SEED_ADMIN_PASSWORD must be at least 12 characters');
+  const existing = await prisma.adminUser.findUnique({ where: { email } });
+  if (existing) return;
+  await prisma.adminUser.create({
+    data: { email, firstName: process.env.SEED_ADMIN_FIRST_NAME ?? 'Super', lastName: process.env.SEED_ADMIN_LAST_NAME ?? 'Admin', role: 'SUPERADMIN', status: 'ACTIVE', passwordHash: await argon2.hash(password) },
+  });
+  console.log(`Created superadmin ${email} (set up 2FA on first sign-in, then remove SEED_ADMIN_PASSWORD).`);
 }
 
 async function main() {
   await seedReference();
+  if (process.env.SEED_MODE === 'production') {
+    await seedProductionAdmin();
+    console.log('\nOne Bank production seed complete (reference data).');
+    return;
+  }
+  if (await prisma.user.count()) {
+    console.log('Database already has users: skipping demo data.');
+    return;
+  }
   await seedAdmins();
   await seedCustomers();
   await seedSampleUploads();

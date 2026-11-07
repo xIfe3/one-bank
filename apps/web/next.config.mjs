@@ -1,5 +1,12 @@
+import { dirname, resolve } from 'path';
+import { fileURLToPath } from 'url';
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
+  outputFileTracingRoot: root,
   reactStrictMode: true,
   transpilePackages: ['@onebank/ui', '@onebank/shared'],
   poweredByHeader: false,

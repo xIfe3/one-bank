@@ -524,7 +524,7 @@ export class SupportController {
       where: { ticket: { userId: user.id }, internal: false, attachments: { array_contains: [{ file }] } },
     });
     if (!msg) throw notFound('File');
-    sendUpload(res, 'tickets', file);
+    return sendUpload(res, 'tickets', file);
   }
 }
 

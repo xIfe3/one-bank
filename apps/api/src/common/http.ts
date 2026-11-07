@@ -19,7 +19,7 @@ export interface DeviceInfo {
 }
 
 /**
- * Client IP as resolved by Express using the `trust proxy` setting (main.ts trusts exactly one hop).
+ * Client IP as resolved by Express using the `trust proxy` setting (main.ts trusts TRUST_PROXY_HOPS hops).
  * Never read X-Forwarded-For directly: its first entry is client-controlled.
  */
 export function clientIp(req: Request): string {
@@ -30,7 +30,7 @@ export function deviceInfo(req: Request): DeviceInfo {
   const ua = req.headers['user-agent'] ?? '';
   const parsed = new UAParser(ua).getResult();
   const ip = clientIp(req);
-  const city = (req.headers['x-vercel-ip-city'] as string) || '';
+  const city = (req.headers['cf-ipcity'] as string) || (req.headers['x-vercel-ip-city'] as string) || '';
   const country = (req.headers['cf-ipcountry'] as string) || (req.headers['x-vercel-ip-country'] as string) || '';
   const isLocal = ip === '127.0.0.1' || ip === '::1' || ip.startsWith('192.168.') || ip.startsWith('10.') || ip.startsWith('172.');
   const location = city || country ? [decodeURIComponent(city), country].filter(Boolean).join(', ') : isLocal ? 'Local network' : 'Unknown';

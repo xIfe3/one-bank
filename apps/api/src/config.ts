@@ -30,7 +30,18 @@ export const config = {
   disableWorkers: process.env.DISABLE_WORKERS === 'true',
   settlementDelayMs: Number(process.env.SETTLEMENT_DELAY_MS ?? 30_000),
   wireDelayMs: Number(process.env.WIRE_DELAY_MS ?? 180_000),
+  /** Reverse proxies in front of the API: 1 = Traefik only, 2 = Cloudflare proxy + Traefik. */
+  trustProxyHops: Number(process.env.TRUST_PROXY_HOPS ?? 1),
   uploadDir: process.env.UPLOAD_DIR ?? 'uploads',
+  /** Cloudflare R2 (private bucket). When unset, uploads go to UPLOAD_DIR on local disk. */
+  r2: process.env.R2_BUCKET
+    ? {
+        accountId: req('R2_ACCOUNT_ID'),
+        accessKeyId: req('R2_ACCESS_KEY_ID'),
+        secretAccessKey: req('R2_SECRET_ACCESS_KEY'),
+        bucket: process.env.R2_BUCKET,
+      }
+    : undefined,
 };
 
 if (config.env === 'production') {

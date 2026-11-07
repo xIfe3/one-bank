@@ -10,7 +10,7 @@ import { config } from './config';
 
 export async function createApp() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger: config.env === 'test' ? ['error'] : ['log', 'warn', 'error'] });
-  app.set('trust proxy', 1);
+  app.set('trust proxy', config.trustProxyHops);
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'same-site' } }));
   app.use(cookieParser());
   app.enableCors({

@@ -158,3 +158,21 @@ The e2e journeys cover signup with email verification via the mail catcher, a me
 | `COOKIE_DOMAIN`, `COOKIE_SECURE` | Set to your parent domain and `true` behind HTTPS |
 | `ENCRYPTION_KEY` | 32-byte hex key for AES-256-GCM (card numbers, 2FA secrets). **Change it.** |
 | `JWT_ACCESS_SECRET`, `JWT_ADMIN_SECRET` | **Change both** for any shared deployment |
+
+## Deploying (Dokploy + Cloudflare R2)
+
+Production runs as one Docker Compose app: [`docker-compose.prod.yml`](docker-compose.prod.yml) with Postgres, Redis, the API, web and admin. Uploads (KYC documents, ticket attachments) go to a **private** Cloudflare R2 bucket and are always streamed through the API, so access checks still apply.
+
+1. **R2:** in Cloudflare create a bucket (for example `onebank-uploads`) and keep public access **off**. Under *R2 → Manage API tokens*, create a token with *Object Read & Write* on that bucket. Note the account ID, access key ID and secret.
+2. **DNS:** point three records at your Contabo server's IP, for example `onebank.com`, `admin.onebank.com` and `api.onebank.com`.
+3. **Dokploy:** *Create Service → Compose*, connect this repo and branch, and set the compose path to `docker-compose.prod.yml`.
+4. **Environment:** paste [`.env.production.example`](.env.production.example) into the Environment tab and fill in every value (`openssl rand -hex 32` for each secret). `PUBLIC_API_URL` and `WEB_URL` are baked into the frontends at build time, so **redeploy** after changing them.
+5. **Domains tab:** `web` → `onebank.com` on port **3000**, `admin` → `admin.onebank.com` on port **3000**, `api` → `api.onebank.com` on port **4100**. Turn on HTTPS (Let's Encrypt). With the Cloudflare proxy on, the HTTP challenge still works; or use a Cloudflare Origin Certificate.
+6. **Deploy.** On every boot the API runs `prisma migrate deploy`, then an idempotent seed of the reference data. On the first boot it also creates the superadmin from `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`. Sign in to the admin console, set up 2FA, then delete `SEED_ADMIN_PASSWORD`.
+
+Notes:
+- The demo users are **never** created when `SEED_MODE=production`. Use `SEED_MODE=demo` only on a throwaway staging server.
+- Keep `ENCRYPTION_KEY` safe and never change it: card data and 2FA secrets are encrypted with it.
+- **Cloudflare proxy (orange cloud):** this stack expects it. `TRUST_PROXY_HOPS=2` (Cloudflare + Traefik) lets the API see the real visitor IP, and location comes from `CF-IPCountry`. For the city as well, turn on *Rules → Managed Transforms → Add visitor location headers*. Set the SSL mode to **Full (strict)**. Turn the proxy off and you must set `TRUST_PROXY_HOPS=1`.
+- **Lock the origin to Cloudflare.** If the server can be reached directly by IP, a client can forge `X-Forwarded-For` / `CF-IPCountry` and slip past the rate limits and the admin allowlist. Use Contabo's firewall (or `iptables` on the `DOCKER-USER` chain; plain `ufw` does not filter Docker-published ports) to allow 80/443 only from [Cloudflare's IP ranges](https://www.cloudflare.com/ips/), and keep port 3000 (Dokploy's UI) and SSH restricted to your own IP.
+- Back up the `pgdata` volume (Dokploy → Volume Backups, or a scheduled `pg_dump`).

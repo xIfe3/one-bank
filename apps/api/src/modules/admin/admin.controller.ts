@@ -552,7 +552,7 @@ export class AdminOpsController {
   @Roles('ADMIN', 'COMPLIANCE')
   @Get('kyc/files/:file')
   kycFile(@Param('file') file: string, @Res() res: Response) {
-    sendUpload(res, 'kyc', file);
+    return sendUpload(res, 'kyc', file);
   }
 
   // ----- support -----
@@ -611,7 +611,7 @@ export class AdminOpsController {
 
   @Get('tickets/attachments/:file')
   attachment(@Param('file') file: string, @Res() res: Response) {
-    sendUpload(res, 'tickets', file);
+    return sendUpload(res, 'tickets', file);
   }
 
   @Get('canned-replies')
