@@ -33,8 +33,8 @@ export function createApi(opts: ApiOptions) {
   let csrfPromise: Promise<string> | null = null;
   let refreshPromise: Promise<boolean> | null = null;
 
-  async function csrf(): Promise<string> {
-    const existing = readCookie('ob_csrf');
+  async function csrf(fresh = false): Promise<string> {
+    const existing = fresh ? undefined : readCookie('ob_csrf');
     if (existing) return existing;
     csrfPromise ??= fetch(`${opts.baseUrl}/csrf`, { credentials: 'include' })
       .then((r) => r.json())
@@ -55,11 +55,11 @@ export function createApi(opts: ApiOptions) {
     return refreshPromise;
   }
 
-  async function raw(method: string, path: string, body?: unknown, retry = true): Promise<Response> {
+  async function raw(method: string, path: string, body?: unknown, retry = true, freshCsrf = false): Promise<Response> {
     const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
     const headers: Record<string, string> = {};
     if (!isForm && body !== undefined) headers['Content-Type'] = 'application/json';
-    if (method !== 'GET') headers['x-csrf-token'] = await csrf();
+    if (method !== 'GET') headers['x-csrf-token'] = await csrf(freshCsrf);
     const res = await fetch(`${opts.baseUrl}${path}`, {
       method,
       credentials: 'include',
@@ -75,8 +75,8 @@ export function createApi(opts: ApiOptions) {
       const clone = res.clone();
       const j = await clone.json().catch(() => null);
       if (retry && j?.error?.message?.includes('CSRF')) {
-        document.cookie = 'ob_csrf=; Max-Age=0; path=/';
-        return raw(method, path, body, false);
+        // The readable cookie may be stale or belong to another (sub)domain: get a fresh token from the API.
+        return raw(method, path, body, false, true);
       }
     }
     return res;
